@@ -1,7 +1,4 @@
-# tsp
-
-
-**旅行商问题(Traveling Salesman Problem)**
+# 旅行商问题(Traveling Salesman Problem)
 
 实验数据采用随机生成的20/50城市数据
 
