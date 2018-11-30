@@ -6,7 +6,7 @@
   generation = 677  
   optimal distance = **535.0245083596208**   
   *by tsp-ga-opp.py*  
-  ![image](https://github.com/wildlywasp/tsp-ga/blob/master/figure/city50.551.4972701216939.png)
+  ![image](https://github.com/wildlywasp/tsp/blob/master/figure/city50.551.4972701216939.png)
 
 
 #### 2.  
@@ -14,7 +14,7 @@
   generation = 516  
   optimal distance = 551.4972701216939  
   *by tsp-ga-opp.py*  
-  ![image](https://github.com/wildlywasp/tsp-ga/blob/master/figure/city50.551.4972701216939.png)
+  ![image](https://github.com/wildlywasp/tsp/blob/master/figure/city50.551.4972701216939.png)
   
   
 #### 3.  
@@ -22,7 +22,7 @@
   generation = 1595  
   optimal distance = 551.8041637349438  
   *by tsp-ga-opp.py*  
-  ![image](https://github.com/wildlywasp/tsp-ga/blob/master/figure/city50.551.8041637349438.png)
+  ![image](https://github.com/wildlywasp/tsp/blob/master/figure/city50.551.8041637349438.png)
   
   
 #### 4.  
@@ -30,4 +30,4 @@
   generation = 744  
   optimal distance = 555.3488439497532  
   *by tsp-ga-opp.py*  
-  ![image](https://github.com/wildlywasp/tsp-ga/blob/master/figure/city50.555.3488439497532.png)
+  ![image](https://github.com/wildlywasp/tsp/blob/master/figure/city50.555.3488439497532.png)
