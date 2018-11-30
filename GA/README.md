@@ -1,5 +1,5 @@
 # tsp-ga
-**Traveling Salesman Problem with genetic algorithm**
+**Traveling salesman problem with genetic algorithm**
 
 #### 1.  
   city = 50  
