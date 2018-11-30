@@ -11,10 +11,10 @@
 
 #### 2.  
   city = 50  
-  generation = 516  
-  optimal distance = 551.4972701216939  
+  generation = 458  
+  optimal distance = 536.7947467795627
   *by tsp-ga-opp.py*  
-  ![image](https://github.com/wildlywasp/tsp/blob/master/GA/figure/city50.551.4972701216939.png)
+  ![image](https://github.com/wildlywasp/tsp/blob/master/GA/figure/city50.536.7947467795627.png)
   
   
 #### 3.  
