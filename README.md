@@ -1,4 +1,4 @@
 # tsp
 
 
-Traveling saleman
+Traveling Salesman Problem
