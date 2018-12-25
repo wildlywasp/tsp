@@ -238,16 +238,20 @@ def heredity():
     position = np.random.randint(0, size, nCross//2)
     # 程度（交叉位置数）
     level = np.random.randint(1, size//2, nCross//2)
+    # 交叉位置索引
     crossArea = np.array([np.arange(x, x+y) %
                           size for x, y in zip(position, level)])
+    # 带交叉父代基因合并
     mConbine[0:size, 0:nCross//2] = mRoute[:, aCross[0:nCross//2]]
     mConbine[size:size*2, 0:nCross//2] = mRoute[:, aCross[nCross//2:nCross]]
     allIndex = np.arange(size*2)
     for ii in range(nCross//2):
         mConbine[[np.append(crossArea[ii], crossArea[ii]+size)],
                  ii] = mConbine[[np.append(crossArea[ii]+size, crossArea[ii])], ii]
+        # 找出未重复的一组路线
         _, index = np.unique(mConbine[:, ii], return_index=True)
         mRoute[:, aAban[ii*2]] = mConbine[:, ii][np.sort(index)]
+        # 剩下的一组路线
         indexLeft = allIndex[np.isin(allIndex, index, invert=True)]
         mRoute[:, aAban[ii*2+1]] = mConbine[:, ii][np.sort(indexLeft)]
 
