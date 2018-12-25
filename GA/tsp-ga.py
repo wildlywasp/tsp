@@ -4,6 +4,9 @@
 
 
 import numpy as np
+from numpy import sum as npsum
+from numpy import append as npappend
+from numpy.random import randint as nprandint
 import random
 from matplotlib import pyplot as plt
 from numba import jit
@@ -12,15 +15,16 @@ import json
 # 导入数据集
 from data import city2, city3, city4, city5, city6
 
+
 # 参数设置
 city = city4     # 默认城市数据集
 pPopu = 0.0001   # 初始化种群个体数占总可能的比例
-pAban = 0.55     # 样本总体中舍弃个体比例
-pVari = 0.35     # 群体变异比例
-pCloneWithVari = 0.10  # 优质个体直接变异产生新个体比例
+pAban = 0.45     # 样本总体中舍弃个体比例
+pVari = 0.4     # 群体变异比例
+pCloneWithVari = 0.05  # 优质个体直接变异产生新个体比例
 pResrve = 0.01  # 样本总体中保留个体比例
 nMax = 3000     # 最大个体数
-divi = 1
+
 
 # 样本种群数量
 size = len(city)    # 城市数量
@@ -37,8 +41,8 @@ mVari = np.zeros([size, round(nPopu*0.5)]).astype(np.int)  # 待变异备份矩�
 mConbine = np.zeros([size*2, round(nPopu*0.5)]).astype(np.int)  # 交叉准备矩阵
 aDistance = np.zeros(nPopu)  # 距离向量
 aResr = np.zeros(round(nPopu*0.3)).astype(np.int)  # 选择保留个体
-aAban = np.zeros(round(nPopu*0.6)).astype(np.int)  # abandon 舍弃个体编号
-aVari = np.zeros(round(nPopu*0.5)).astype(np.int)  # variation 变异个体编号
+aAban = np.zeros(round(nPopu*0.5)).astype(np.int)  # abandon 舍弃个体编号
+aVari = np.zeros(round(nPopu*0.7)).astype(np.int)  # variation 变异个体编号
 aCloneWithVari = np.zeros(round(nPopu*0.2)).astype(np.int)  # 直接变成新个体编号
 aCross = np.zeros(round(nPopu*0.5)).astype(np.int)  # Cross 交叉个体编号
 aNext = np.zeros(nPopu).astype(np.int)  # 下一轮需要更新距离个体（本轮已调整个体）
@@ -84,7 +88,7 @@ def distanceUpdate(nNext):
         way = mRoute[:, aNext[ii]]
         wayRoll[0] = way[-1]
         wayRoll[1:] = way[0:size-1]
-        aDistance[aNext[ii]] = np.sum(mInterval[way, wayRoll])
+        aDistance[aNext[ii]] = npsum(mInterval[way, wayRoll])
 
 
 # 规模更新
@@ -160,30 +164,31 @@ def fitness():
     global aAban, aVari, aCross, aCloneWithVari, aResr, aNext
     rank = aDistance.argsort()
     aAban[0:nAban] = np.array(random.sample(
-        list(rank[-(1.2*nAban).astype(np.int):]), nAban))
+        list(rank[-(1.5*nAban).astype(np.int):]), nAban))
     aResr[0:nResr] = rank[0:nResr]
     # rank = rank[np.isin(rank, aAban, invert=True)]
-    # aCross[0:nCross] = np.append(rank[0:7*nResr], np.array(
+    # aCross[0:nCross] = npappend(rank[0:7*nResr], np.array(
     #     random.sample(list(rank[7*nResr:]), nCross-7*nResr)))
-    aCross[0:10*nResr] = rank[0:10*nResr]
-    aCross[10*nResr:nCross
-           ] = random.sample(list(rank[10*nResr:]), nCross-10*nResr)
+    aCross[0:15*nResr] = rank[0:30*nResr:2]
+    aCross[15*nResr:nCross
+           ] = random.sample(list(rank[30*nResr:]), nCross-15*nResr)
     np.random.shuffle(aCross[0:nCross])
-    # aCross[0:nCross] = np.append(np.array(
+    # aCross[0:nCross] = npappend(np.array(
     #     random.sample(list(rank[0:nCross//6*4]), nCross//2)), np.array(
     #     random.sample(list(rank), nCross//2)))
     aCloneWithVari[0:nCloneWithVari] = rank[0:nCloneWithVari]
-    rank = rank[np.isin(rank, aResr[0:nResr], invert=True)]
-    rank = rank[np.isin(rank, aAban[0:nAban], invert=True)]
-    # aVari[0:nVari] = np.append(np.array(random.sample(list(
+    # rank = rank[np.isin(rank, aResr[0:nResr], invert=True)]
+    # rank = rank[np.isin(rank, aAban[0:nAban], invert=True)]
+    rank = np.array(list(set(rank)-set(aResr[0:nResr])-set(aAban[0:nAban])))
+    # aVari[0:nVari] = npappend(np.array(random.sample(list(
     #     rank[nResr:6*nResr]), 3*nResr)), np.array(random.sample(list(rank[6*nResr:]), nVari-3*nResr)))
-    # aVari[0:nVari]=np.append(rank[nResr+np.arange(0, 2*nResr)*3],
+    # aVari[0:nVari]=npappend(rank[nResr+np.arange(0, 2*nResr)*3],
     #                            np.array(random.sample(list(rank[7*nResr:]), nVari-2*nResr)))
-    aVari[0:5*nResr] = rank[np.arange(0, 5*nResr)*3+nResr]
+    aVari[0:5*nResr] = rank[np.arange(0, 5*nResr)*2+nResr]
     aVari[5*nResr:nVari
-          ] = random.sample(list(rank[10*nResr:]), nVari-5*nResr)
+          ] = random.sample(list(rank[11*nResr:]), nVari-5*nResr)
     np.random.shuffle(aVari[0:nVari])
-    # aNext[0:nNext] = np.append(aAban[0:nAban], aVari[0:nVari])
+    # aNext[0:nNext] = npappend(aAban[0:nAban], aVari[0:nVari])
     aNext[0:nAban] = aAban[0:nAban]
     aNext[nAban:nAban+nVari] = aVari[0:nVari]
 
@@ -191,7 +196,7 @@ def fitness():
 # 变异、交叉、遗传
 # @profile
 def heredity():
-    global mRoute, mVari,mConbine
+    global mRoute, mVari, mConbine
     # Cross 方案一（交叉位置交叉法）
     # for ii in range(nCross//2):
     #     fGene = np.zeros(size*2).astype(np.int)
@@ -237,46 +242,49 @@ def heredity():
     # 点位选取
     position = np.random.randint(0, size, nCross//2)
     # 程度（交叉位置数）
-    level = np.random.randint(1, size//2, nCross//2)
+    level = np.random.randint(1, size//3, nCross//2)
     # 交叉位置索引
     crossArea = np.array([np.arange(x, x+y) %
                           size for x, y in zip(position, level)])
     # 带交叉父代基因合并
     mConbine[0:size, 0:nCross//2] = mRoute[:, aCross[0:nCross//2]]
     mConbine[size:size*2, 0:nCross//2] = mRoute[:, aCross[nCross//2:nCross]]
-    allIndex = np.arange(size*2)
+    entirety = np.arange(size*2)
     for ii in range(nCross//2):
-        mConbine[[np.append(crossArea[ii], crossArea[ii]+size)],
-                 ii] = mConbine[[np.append(crossArea[ii]+size, crossArea[ii])], ii]
+        mConbine[[npappend(crossArea[ii], crossArea[ii]+size)],
+                 ii] = mConbine[[npappend(crossArea[ii]+size, crossArea[ii])], ii]
         # 找出未重复的一组路线
         _, index = np.unique(mConbine[:, ii], return_index=True)
         mRoute[:, aAban[ii*2]] = mConbine[:, ii][np.sort(index)]
         # 剩下的一组路线
-        indexLeft = allIndex[np.isin(allIndex, index, invert=True)]
+        # indexLeft = entirety[np.isin(entirety, index, invert=True)]
+        indexLeft = np.array(list(set(entirety)-set(index)))
+        # print(indexLeft)
         mRoute[:, aAban[ii*2+1]] = mConbine[:, ii][np.sort(indexLeft)]
 
+    # # Variation
+    # # 优质个体直接变异替代被舍弃个体
+    # # 变异
+    # # 点位选取
+    # position0 = np.random.randint(0, size, nCloneWithVari)
+    # # 变异程度（移动位置数）
+    # level = np.random.randint(1, size//3, nCloneWithVari)
+    # position1 = np.array([nprandint(x+y, x+size-y) %
+    #                       size for x, y in zip(position0, level)])
+    # posSwap = np.array([(np.arange(x, x+y) % size, np.arange(y, y+z) % size)
+    #                     for x, y, z in zip(position0, position1, level)])
+    # mRoute[:, aAban[nCross:nCross+nCloneWithVari]
+    #        ] = mRoute[:, aCloneWithVari[0:nCloneWithVari]]
+    # for ii in range(nCloneWithVari):
+    #     mRoute[:, aAban[ii+nCross]][(npappend(posSwap[ii][0], posSwap[ii][1]))
+    #                                 ] = mRoute[:, aAban[ii+nCross]][(npappend(posSwap[ii][0], posSwap[ii][1]))]
 
-    # Variation
-    # 优质个体直接变异替代被舍弃个体
+    # # 方法二（所有新个体与原个体均不同，相比方法一收敛减慢）
     # 点位选取
     position = np.random.randint(0, size, nCloneWithVari)
     # 变异程度（移动位置数）
-    level = np.random.randint(1, size//3, nCloneWithVari)
+    level = np.random.randint(1, size, nCloneWithVari)
     posInsert = np.array([x % (size-y) for x, y in zip(position, level)])
-    # # 方法一（大约有15%左右的新个体没有变化，相当于原个体的复制，可加速收敛，对应于 divi = 3 ）
-    # 整体位置向量，用于计算位置向量
-    # entirety = np.arange(0, size)
-    # for ii in range(nCloneWithVari):
-    #     # 选中位移的位置
-    #     posSelect = np.arange(position[ii], position[ii]+level[ii]) % size
-    #     # 剩余位置向量
-    #     posLeft = entirety[np.isin(entirety, posSelect, invert=True)]
-    #     mRoute[:, aAban[ii+nCross]][0:level[ii]
-    #                                 ] = mRoute[:, aCloneWithVari[ii]][posSelect]
-    #     mRoute[:, aAban[ii+nCross]][level[ii]:
-    #                                 ] = mRoute[:, aCloneWithVari[ii]][posLeft]
-
-    # 方法二（所有新个体与原个体均不同，相比方法一收敛减慢）
     for ii in range(nCloneWithVari):
         # 选中位移的位置
         posSelect = np.arange(position[ii], position[ii]+level[ii]) % size
@@ -294,35 +302,25 @@ def heredity():
 
     # 变异
     # 点位选取
-    position = np.random.randint(0, size, nVari)
+    position0 = np.random.randint(0, size, nVari)
     # 变异程度（移动位置数）
-    level = np.random.randint(1, 6, nVari)
-    posInsert = np.array([x % (size-y) for x, y in zip(position, level)])
-    mVari[:, 0:nVari] = mRoute[:, aVari[0:nVari]]
+    level = np.random.randint(1, 5, nVari)
+    position1 = np.array([nprandint(x+y, x+size-y) %
+                          size for x, y in zip(position0, level)])
+    posSwap = np.array([(np.arange(x, x+y) % size, np.arange(y, y+z) % size)
+                        for x, y, z in zip(position0, position1, level)])
+    # mVari[:, 0:nVari] = mRoute[:, aVari[0:nVari]]
     for ii in range(nVari):
-        # 选中位移的位置
-        posSelect = np.arange(position[ii], position[ii]+level[ii]) % size
-        # 剩余位置向量
-        # posLeft = entirety[np.isin(entirety, posSelect, invert=True)]
-        posLeft = np.arange(position[ii]+level[ii], position[ii]+size) % size
-        # mRoute[:, aVari[ii]][0:level[ii]] = mVari[:, ii][posSelect]
-        # mRoute[:, aVari[ii]][level[ii]:] = mVari[:, ii][posLeft]
-        mRoute[:, aVari[ii]][0:posInsert[ii]
-                             ] = mVari[:, ii][posLeft[0:posInsert[ii]]]
-
-        mRoute[:, aVari[ii]][posInsert[ii]:posInsert[ii] + level[ii]
-                             ] = mVari[:, ii][posSelect]
-
-        mRoute[:, aVari[ii]][posInsert[ii]+level[ii]:
-                             ] = mVari[:, ii][posLeft[posInsert[ii]:]]
+        mRoute[:, aVari[ii]][(npappend(posSwap[ii][0], posSwap[ii][1]))
+                             ] = mRoute[:, aVari[ii]][(npappend(posSwap[ii][0], posSwap[ii][1]))]
 
 
 # plot
 def plot():
     plt.plot(city[:, 0], city[:, 1], 'ro')
     index = mRoute[:, aDistance.argmin()]
-    plt.plot(city[np.append(index, index[0]), 0],
-             city[np.append(index, index[0]), 1])
+    plt.plot(city[npappend(index, index[0]), 0],
+             city[npappend(index, index[0]), 1])
 
 
 # data output
@@ -336,19 +334,14 @@ def write(usedTime, count):
 
 
 def main():
-    global divi
     t0 = time.process_time()
-
     # 首次全体均需重新计算distance
-    # nNext = nPopu
     populationInitialization()
     intervalInitialization()
     scaleInitialization()
     distanceUpdate(nPopu)
     # 当前最优(current optimal)
     cp = np.min(aDistance)
-    # 优质群里均值、次要判决门限 初始化
-    jc = 2*cp
     # run = True
     gene = 0
     thresholdValue = 0
@@ -371,18 +364,9 @@ def main():
             thresholdValue += 1
         else:
             thresholdValue = 0
-        # 调整变异程度
-        # if (thresholdValue >= round(size*0.25)):
-        #     # if (thresholdValue >= round(size*1.5)):
-        #     #     divi = 4
-        #     # else:
-        #     #     divi = 3
-        #     divi = 5
-        # else:
-        #     divi = 2
         direction = scaleUpdate(prev, step, direction)
         print("{0:<9}".format(gene), "{0:<25}".format(
-            cp), "{0:<25}".format(jc), "{0:^9}".format(divi))
+            cp), "{0:<25}".format(jc))
     print(mRoute[:, aDistance.argmin()])
 
     usedTime = time.process_time()-t0
