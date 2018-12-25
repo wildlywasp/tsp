@@ -10,8 +10,7 @@
 
 当前最优结果由遗传算法得到，具体信息如下  
 city = 50  
-generation = 677  
 optimal distance = **527.0060924886811**   
-*by tsp-ga-opp.py*  
+*by tsp-ga.py*  
 
 ![image](https://github.com/wildlywasp/tsp/blob/master/GA/figure/city50.527.0060924886811.png)
