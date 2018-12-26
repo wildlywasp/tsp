@@ -20,7 +20,7 @@ from data import city2, city3, city4, city5, city6
 city = city4     # 默认城市数据集
 pPopu = 0.0001   # 初始化种群个体数占总可能的比例
 pAban = 0.45     # 样本总体中舍弃个体比例
-pVari = 0.4     # 群体变异比例
+pVari = 0.35     # 群体变异比例
 pCloneWithVari = 0.05  # 优质个体直接变异产生新个体比例
 pResrve = 0.01  # 样本总体中保留个体比例
 nMax = 3000     # 最大个体数
@@ -37,13 +37,13 @@ if(nMax < nPopu):
 mInterval = np.zeros([size, size])  # 城市间距矩阵
 mRoute = np.zeros([size, nPopu]).astype(np.int)  # 路线矩阵
 # mCross = np.zeros([size, round(nPopu*0.5)]).astype(np.int)  # 待交叉备份矩阵
-mVari = np.zeros([size, round(nPopu*0.5)]).astype(np.int)  # 待变异备份矩阵
+# mVari = np.zeros([size, round(nPopu*0.5)]).astype(np.int)  # 待变异备份矩阵
 mConbine = np.zeros([size*2, round(nPopu*0.5)]).astype(np.int)  # 交叉准备矩阵
 aDistance = np.zeros(nPopu)  # 距离向量
-aResr = np.zeros(round(nPopu*0.3)).astype(np.int)  # 选择保留个体
+aResr = np.zeros(round(nPopu*0.05)).astype(np.int)  # 选择保留个体
 aAban = np.zeros(round(nPopu*0.5)).astype(np.int)  # abandon 舍弃个体编号
-aVari = np.zeros(round(nPopu*0.7)).astype(np.int)  # variation 变异个体编号
-aCloneWithVari = np.zeros(round(nPopu*0.2)).astype(np.int)  # 直接变成新个体编号
+aVari = np.zeros(round(nPopu*0.5)).astype(np.int)  # variation 变异个体编号
+aCloneWithVari = np.zeros(round(nPopu*0.1)).astype(np.int)  # 直接变成新个体编号
 aCross = np.zeros(round(nPopu*0.5)).astype(np.int)  # Cross 交叉个体编号
 aNext = np.zeros(nPopu).astype(np.int)  # 下一轮需要更新距离个体（本轮已调整个体）
 # aNext初始化
@@ -58,7 +58,6 @@ def scaleInitialization():
     nVari = np.floor(nPopu*pVari).astype(np.int)     # 变异个体总数
     # 优质个体直接变异产生新个体数
     nCloneWithVari = (np.floor(nPopu*pCloneWithVari).astype(np.int))//2*2
-    # print(nCloneWithVari)
     nCross = nAban-nCloneWithVari  # 交叉个体总数
     # nNext = nAban + nVari  # 下一轮调整个数
 
@@ -155,8 +154,6 @@ def scaleUpdate(prev, step, direction):
     return direction
 
 
-# def roulette():
-#     roul = (1/aDistance)/np.sum(1/aDistance)
 
 
 # 适应度评价
@@ -164,30 +161,18 @@ def fitness():
     global aAban, aVari, aCross, aCloneWithVari, aResr, aNext
     rank = aDistance.argsort()
     aAban[0:nAban] = np.array(random.sample(
-        list(rank[-(1.5*nAban).astype(np.int):]), nAban))
+        list(rank[-(1.8*nAban).astype(np.int):]), nAban))
     aResr[0:nResr] = rank[0:nResr]
-    # rank = rank[np.isin(rank, aAban, invert=True)]
-    # aCross[0:nCross] = npappend(rank[0:7*nResr], np.array(
-    #     random.sample(list(rank[7*nResr:]), nCross-7*nResr)))
-    aCross[0:15*nResr] = rank[0:30*nResr:2]
-    aCross[15*nResr:nCross
-           ] = random.sample(list(rank[30*nResr:]), nCross-15*nResr)
+    aCross[0:10*nResr] = rank[0:20*nResr:2]
+    aCross[10*nResr:nCross
+           ] = random.sample(list(rank[20*nResr:]), nCross-10*nResr)
     np.random.shuffle(aCross[0:nCross])
-    # aCross[0:nCross] = npappend(np.array(
-    #     random.sample(list(rank[0:nCross//6*4]), nCross//2)), np.array(
-    #     random.sample(list(rank), nCross//2)))
     aCloneWithVari[0:nCloneWithVari] = rank[0:nCloneWithVari]
-    # rank = rank[np.isin(rank, aResr[0:nResr], invert=True)]
-    # rank = rank[np.isin(rank, aAban[0:nAban], invert=True)]
     rank = np.array(list(set(rank)-set(aResr[0:nResr])-set(aAban[0:nAban])))
-    # aVari[0:nVari] = npappend(np.array(random.sample(list(
-    #     rank[nResr:6*nResr]), 3*nResr)), np.array(random.sample(list(rank[6*nResr:]), nVari-3*nResr)))
-    # aVari[0:nVari]=npappend(rank[nResr+np.arange(0, 2*nResr)*3],
-    #                            np.array(random.sample(list(rank[7*nResr:]), nVari-2*nResr)))
-    aVari[0:5*nResr] = rank[np.arange(0, 5*nResr)*2+nResr]
+    aVari[0:5*nResr] = rank[np.arange(0, 5*nResr)*2]
     aVari[5*nResr:nVari
-          ] = random.sample(list(rank[11*nResr:]), nVari-5*nResr)
-    np.random.shuffle(aVari[0:nVari])
+          ] = random.sample(list(rank[10*nResr:]), nVari-5*nResr)
+    # np.random.shuffle(aVari[0:nVari])
     # aNext[0:nNext] = npappend(aAban[0:nAban], aVari[0:nVari])
     aNext[0:nAban] = aAban[0:nAban]
     aNext[nAban:nAban+nVari] = aVari[0:nVari]
@@ -196,7 +181,7 @@ def fitness():
 # 变异、交叉、遗传
 # @profile
 def heredity():
-    global mRoute, mVari, mConbine
+    global mRoute, mConbine
     # Cross 方案一（交叉位置交叉法）
     # for ii in range(nCross//2):
     #     fGene = np.zeros(size*2).astype(np.int)
@@ -242,7 +227,7 @@ def heredity():
     # 点位选取
     position = np.random.randint(0, size, nCross//2)
     # 程度（交叉位置数）
-    level = np.random.randint(1, size//3, nCross//2)
+    level = np.random.randint(1, size, nCross//2)
     # 交叉位置索引
     crossArea = np.array([np.arange(x, x+y) %
                           size for x, y in zip(position, level)])
@@ -259,13 +244,12 @@ def heredity():
         # 剩下的一组路线
         # indexLeft = entirety[np.isin(entirety, index, invert=True)]
         indexLeft = np.array(list(set(entirety)-set(index)))
-        # print(indexLeft)
         mRoute[:, aAban[ii*2+1]] = mConbine[:, ii][np.sort(indexLeft)]
 
     # # Variation
     # # 优质个体直接变异替代被舍弃个体
     # # 变异
-    # # 点位选取
+    # # # 点位选取
     # position0 = np.random.randint(0, size, nCloneWithVari)
     # # 变异程度（移动位置数）
     # level = np.random.randint(1, size//3, nCloneWithVari)
@@ -284,7 +268,7 @@ def heredity():
     position = np.random.randint(0, size, nCloneWithVari)
     # 变异程度（移动位置数）
     level = np.random.randint(1, size, nCloneWithVari)
-    posInsert = np.array([x % (size-y) for x, y in zip(position, level)])
+    posInsert = np.array([nprandint(0, size-x) for x in level])
     for ii in range(nCloneWithVari):
         # 选中位移的位置
         posSelect = np.arange(position[ii], position[ii]+level[ii]) % size
